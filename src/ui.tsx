@@ -85,11 +85,14 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
 
 /** swipe left to delete. Wrap lists in <AnimatePresence initial={false}>. */
 export function SwipeRow({ children, onDelete, onTap, foot, className = '' }: { children: React.ReactNode; onDelete: () => void; onTap?: () => void; foot?: React.ReactNode; className?: string }) {
+  const moved = useRef(false)
   return (
     <motion.div layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ x: -480, opacity: 0, height: 0, marginTop: -5, marginBottom: -4 }} transition={{ duration: 0.28 }} className="swipe">
       <div className="swipe-bg"><span>🗑 Delete</span></div>
       <motion.div className={`swipe-fg ${className}`} drag="x" dragDirectionLock dragSnapToOrigin dragConstraints={{ left: -140, right: 0 }} dragElastic={{ left: 0.5, right: 0 }}
-        onDragEnd={(_, i) => { if (i.offset.x < -95 || i.velocity.x < -650) { buzz(); onDelete() } }} onTap={onTap}>
+        onDragStart={() => { moved.current = true }}
+        onDragEnd={(_, i) => { setTimeout(() => { moved.current = false }, 60); if (i.offset.x < -95 || i.velocity.x < -650) { buzz(); onDelete() } }}
+        onTap={() => { if (moved.current) return; onTap?.() }}>
         {children}
       </motion.div>
       {foot && <div className="swipe-foot">{foot}</div>}

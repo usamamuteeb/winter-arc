@@ -1,0 +1,25 @@
+.gear { font-size: 20px; padding: 10px 14px; }
+.heat { grid-template-columns: repeat(15, 1fr); }
+.hc { aspect-ratio: 1; border-radius: 5px; border: 0; padding: 0; cursor: pointer; display: block; }
+.hc.today { outline: 2px solid #FBBF24; }
+.dayrow { text-align: left; }
+.gbadge { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; }
+.mm2 + .mm2 { margin-top: 12px; }
+.daydetail { display: flex; flex-direction: column; gap: 14px; padding-bottom: 6px; }
+.dhead { display: flex; align-items: center; gap: 14px; }
+.dpil { display: flex; flex-direction: column; gap: 9px; }
+.dp { display: grid; grid-template-columns: 96px 1fr 34px; gap: 10px; align-items: center; font-size: 13px; }
+.dp .bar { margin: 0; } .dp small { color: var(--mut); text-align: right; }
+.dstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.dstat { background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.dstat b { font-size: 15px; font-family: 'Space Grotesk', sans-serif; } .dstat small { color: var(--mut); font-size: 10.5px; }
+.dmeals { font-size: 13.5px; line-height: 1.6; color: #d6e2f0; } .dmeals small { display: block; letter-spacing: .8px; font-weight: 700; color: var(--mut); font-size: 10.5px; margin-bottom: 2px; }
+.dlist h4 { margin: 4px 0 8px; font-size: 13px; letter-spacing: .6px; text-transform: uppercase; } .dlist h4.bad { color: #F87171; } .dlist h4.good { color: #34D399; }
+.dl { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 12px; margin-bottom: 6px; font-size: 14px; }
+.dl span { font-weight: 800; width: 16px; } .dl small { margin-left: auto; color: var(--mut); font-size: 11px; }
+.dl.bad { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); } .dl.bad span { color: #F87171; }
+.dl.good { background: rgba(52,211,153,.08); } .dl.good span { color: #34D399; }
+.sep { height: 1px; background: var(--line); margin: 16px 0; }
+.filebtn { display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; } .filebtn input { display: none; }
+.ghost.wide { width: 100%; } .ghost.danger.armed { background: rgba(248,113,113,.2); border-color: #F87171; }
+.lbl { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--mut); margin-bottom: 10px; }

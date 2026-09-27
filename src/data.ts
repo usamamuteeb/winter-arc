@@ -10,10 +10,11 @@ export const PILLARS: Record<Pillar, { label: string; weight: number; color: str
 
 export interface Habit { id: string; pillar: Pillar; title: string; time?: string; xp: number }
 
-// SAMPLE DATA - the real routine gets set up later
+// SAMPLE DATA - replaced when you tap "Start fresh" in Progress > Settings
 export const HABITS: Habit[] = [
   { id: 'r1', pillar: 'routine', title: 'Wake up at 5:45 AM', time: '05:45', xp: 20 },
   { id: 'h1', pillar: 'health', title: 'Warm water + Vitamin D', time: '06:00', xp: 10 },
+  { id: 'h5', pillar: 'health', title: 'Weigh in after waking', time: '06:05', xp: 10 },
   { id: 'h2', pillar: 'health', title: '15 min sunlight walk', time: '06:10', xp: 15 },
   { id: 'g1', pillar: 'gym', title: 'Went to the gym', time: '06:45', xp: 40 },
   { id: 'd1', pillar: 'diet', title: 'High-protein breakfast (eggs + oats)', time: '08:15', xp: 10 },
@@ -29,32 +30,27 @@ export const HABITS: Habit[] = [
   { id: 'r3', pillar: 'routine', title: "Plan tomorrow's 3 priorities", time: '21:40', xp: 10 },
   { id: 'r4', pillar: 'routine', title: 'Sleep by 10:30 PM', time: '22:30', xp: 20 },
 ]
-export const START_DONE = ['r1', 'h1', 'h2', 'g1', 'd1', 'f1', 'd2']
+export const START_DONE = ['r1', 'h1', 'h5', 'h2', 'g1', 'd1', 'f1', 'd2']
 
-export const ARC_DAY = 12
 export const ARC_TOTAL = 90
-export const STREAK = 11
-export const XP_TOTAL = 1380
 export const LEVELS = ['Frostbite', 'Iron', 'Steel', 'Titan', 'Winter King']
 
-/* ---------- health ---------- */
-export const GYM_WEEK_BEFORE_TODAY = [true, true, false, true, true, true] // Mon..Sat sample
-export const STEP_GOAL = 8000
-export const SLEEP_GOAL = 7.5
-export const WEIGHTS = [
-  { d: 'Sep 15', kg: 79.6 }, { d: 'Sep 18', kg: 79.1 }, { d: 'Sep 21', kg: 78.8 }, { d: 'Sep 24', kg: 78.3 }, { d: 'Sep 26', kg: 78.0 },
-]
+/* ---------- health / weight loss ---------- */
+export const HEALTH_GOALS = { steps: 8000, sleep: 7.5 }
+export const WL_DEFAULT = { target: 72, rate: 0.5, height: 175, age: 27, sex: 'm', activity: 1.375 }
+export interface WeightEntry { id: string; date: string; kg: number; waist?: number }
 
 /* ---------- diet ---------- */
-export interface Meal { id: string; slot: string; name: string; kcal: number; protein: number; fat: number; sugar: number; eaten: boolean }
+export interface Meal { id: string; slot: string; name: string; kcal: number; protein: number; fat: number; sugar: number }
 export const MEALS: Meal[] = [
-  { id: 'm1', slot: 'Breakfast', name: '3-egg omelette, oats, black chai', kcal: 520, protein: 32, fat: 22, sugar: 4, eaten: true },
-  { id: 'm2', slot: 'Lunch', name: 'Chicken daal, 2 roti, salad', kcal: 690, protein: 44, fat: 20, sugar: 6, eaten: true },
-  { id: 'm3', slot: 'Snack', name: 'Dahi, banana, almonds', kcal: 310, protein: 16, fat: 12, sugar: 22, eaten: false },
-  { id: 'm4', slot: 'Dinner', name: 'Grilled chicken tikka, sabzi, raita', kcal: 610, protein: 46, fat: 24, sugar: 5, eaten: false },
+  { id: 'm1', slot: 'Breakfast', name: '3-egg omelette, oats, black chai', kcal: 520, protein: 32, fat: 22, sugar: 4 },
+  { id: 'm2', slot: 'Lunch', name: 'Chicken daal, 2 roti, salad', kcal: 690, protein: 44, fat: 20, sugar: 6 },
+  { id: 'm3', slot: 'Snack', name: 'Dahi, banana, almonds', kcal: 310, protein: 16, fat: 12, sugar: 22 },
+  { id: 'm4', slot: 'Dinner', name: 'Grilled chicken tikka, sabzi, raita', kcal: 610, protein: 46, fat: 24, sugar: 5 },
 ]
 export const GOALS = { kcal: 2300, protein: 140, fat: 70, sugar: 40 }
 export const SLOTS = ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Other']
+export const CHAI_DEFAULT = { kind: 'Chai', spoons: 1, goal: 3 }
 
 /* ---------- learning roadmap ---------- */
 export interface Task { id: string; title: string; done: boolean }
@@ -70,13 +66,3 @@ export const ROADMAP: Topic[] = [
   { id: 'w7', title: 'Azure & Databricks Services', tasks: [T('ADLS Gen2, folders and access control'), T('Azure Data Factory: pipelines, triggers, IR'), T('Databricks Workflows and job clusters'), T('Unity Catalog and Key Vault secrets'), T('Terraform + CI/CD basics')] },
   { id: 'w8', title: 'Capstone: Medallion Pipeline', tasks: [T('Ingest raw data to bronze'), T('Clean and dedupe to silver'), T('Build gold tables + a dashboard'), T('Add data quality checks and alerts'), T('README, diagram and demo video on GitHub')] },
 ]
-
-/* ---------- progress sample ---------- */
-const seed = (i: number) => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x) }
-export const DAY_SCORES: (number | null)[] = Array.from({ length: ARC_TOTAL }, (_, i) => {
-  if (i >= ARC_DAY) return null
-  if (i === ARC_DAY - 1) return 0
-  return Math.round(52 + seed(i + 3) * 46)
-})
-export const WEEK_SCORES = [64, 72, 81, 78, 88, 91]
-export const PILLAR_AVG: Record<Pillar, number> = { focus: 82, gym: 88, diet: 71, routine: 76, health: 64 }

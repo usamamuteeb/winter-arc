@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, animate } from 'framer-motion'
+import { readDaily, todayStr } from './logic'
 
 export const buzz = () => { try { navigator.vibrate?.(12) } catch { /* ignore */ } }
 export const uid = () => Math.random().toString(36).slice(2, 9)
@@ -18,7 +19,14 @@ export function useCount(value: number, dur = 0.9) {
 
 export function useLocal<T>(key: string, init: T) {
   const [s, setS] = useState<T>(() => { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : init } catch { return init } })
-  useEffect(() => { localStorage.setItem(key, JSON.stringify(s)) }, [key, s])
+  useEffect(() => { localStorage.setItem(key, JSON.stringify(s)); window.dispatchEvent(new Event('wa-change')) }, [key, s])
+  return [s, setS] as const
+}
+
+/** value that resets every new day. `first` is used only the very first time, `empty` on later days. */
+export function useDaily<T>(key: string, first: T, empty: T = first) {
+  const [s, setS] = useState<T>(() => readDaily<T>(key, first, empty))
+  useEffect(() => { localStorage.setItem(key, JSON.stringify({ d: todayStr(), v: s })); window.dispatchEvent(new Event('wa-change')) }, [key, s])
   return [s, setS] as const
 }
 

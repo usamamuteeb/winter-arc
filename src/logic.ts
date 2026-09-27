@@ -19,11 +19,15 @@ export function readDaily<T>(k: string, first: T, empty: T): T {
 }
 export const HISTORY_KEY = 'wa-history-v1'
 export const SETTINGS_KEY = 'wa-settings-v1'
+export interface Settings { start?: string; name?: string }
+export const getSettings = (): Settings => readJSON<Settings>(SETTINGS_KEY, {})
+export const saveSettings = (patch: Settings) => localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...getSettings(), ...patch }))
+export const getName = (): string => getSettings().name?.trim() || 'Usama'
 export const getStart = (): string => {
-  const s = readJSON<{ start?: string }>(SETTINGS_KEY, {})
+  const s = getSettings()
   if (s.start) return s.start
   const start = todayStr()
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ start }))
+  saveSettings({ start })
   return start
 }
 export const arcDay = (start: string) => Math.max(1, Math.min(90, daysBetween(start, todayStr()) + 1))
@@ -122,10 +126,11 @@ export function streakOf(h: History): { current: number; best: number } {
 
 /** wipe everything and start day 1 today */
 export function startFresh() {
+  const oldName = getSettings().name
   const keep = ['wa-learned', 'wa-roadmap-v2', 'wa-goals', 'wa-wl-v1', 'wa-hgoals-v1', 'wa-habits-v1', 'wa-meals-plan-v1', 'wa-chaipref-v1']
   Object.keys(localStorage).filter((k) => k.startsWith('wa-') && !keep.includes(k)).forEach((k) => localStorage.removeItem(k))
   const t = todayStr()
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ start: t }))
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ name: oldName, start: t }))
   localStorage.setItem(HISTORY_KEY, JSON.stringify({}))
   localStorage.setItem('wa-weights-v2', JSON.stringify([]))
   localStorage.setItem('wa-done-v3', JSON.stringify({ d: t, v: [] }))
@@ -140,4 +145,15 @@ export function migrateFresh() {
   if (localStorage.getItem('wa-fresh-v2')) return
   startFresh()
   localStorage.setItem('wa-fresh-v2', '1')
+}
+
+/** every day as a spreadsheet row, so the data can be used elsewhere */
+export function toCSV(h: History): string {
+  const q = (s: string) => '"' + s.replace(/"/g, '""') + '"'
+  const head = 'date,score,kcal,protein_g,fat_g,sugar_g,water_glasses,chai_cups,steps,sleep_h,weight_kg,waist_cm,habits_done,habits_total,missed'
+  const rows = Object.values(h).sort((a, b) => a.date.localeCompare(b.date)).map((d) => [
+    d.date, d.score, d.kcal, d.protein, d.fat, d.sugar, d.water, d.chaiCups, d.steps, d.sleep, d.weight ?? '', d.waist ?? '',
+    d.items.filter((i) => i.done).length, d.items.length, q(d.items.filter((i) => !i.done).map((i) => i.title).join(' | ')),
+  ].join(','))
+  return [head, ...rows].join('\n')
 }

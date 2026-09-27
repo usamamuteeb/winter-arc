@@ -5,8 +5,9 @@ import Diet from './Diet'
 import Focus from './Focus'
 import Health from './Health'
 import { LEARN_TOTAL } from './Learn'
+import Trends from './Trends'
 import {
-  HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, SETTINGS_KEY, startFresh, streakOf, todayStr, type DayLog, type History,
+  HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, getName, getSettings, saveSettings, startFresh, streakOf, toCSV, todayStr, type DayLog, type History,
 } from './logic'
 import { Check, Confetti, Ring, Sheet, Snow, buzz, useCount, useDaily, useLocal } from './ui'
 import './App.css'
@@ -40,7 +41,7 @@ function Today({ habits, done, toggle, history }: { habits: Habit[]; done: strin
     <div className="page">
       <Confetti fire={fire} />
       <div className="top">
-        <div><div className="muted">{greet}, Usama</div><h1>Day {day}<span className="muted"> / {ARC_TOTAL}</span></h1></div>
+        <div><div className="muted">{greet}, {getName()}</div><h1>Day {day}<span className="muted"> / {ARC_TOTAL}</span></h1></div>
         <motion.div className="streak" animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.8 }}>
           <span className="flame">🔥</span><b>{streak}</b>
         </motion.div>
@@ -132,6 +133,7 @@ function Progress({ history }: { history: History }) {
   const [settings, setSettings] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const [startVal, setStartVal] = useState(getStart())
+  const [nameVal, setNameVal] = useState(getName())
   const start = getStart(), t = todayStr()
   const logs = Object.values(history).sort((a, b) => a.date.localeCompare(b.date))
   const avg = logs.length ? Math.round(logs.reduce((a, l) => a + l.score, 0) / logs.length) : 0
@@ -162,6 +164,9 @@ function Progress({ history }: { history: History }) {
     Object.keys(localStorage).filter((k) => k.startsWith('wa-')).forEach((k) => { data[k] = localStorage.getItem(k) ?? '' })
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' })); a.download = `winter-arc-backup-${t}.json`; a.click()
   }
+  const exportCSV = () => {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toCSV(history)], { type: 'text/csv' })); a.download = `winter-arc-daily-log-${t}.csv`; a.click()
+  }
   const importData = (f: File | undefined) => {
     if (!f) return
     const r = new FileReader()
@@ -171,7 +176,7 @@ function Progress({ history }: { history: History }) {
 
   return (
     <div className="page">
-      <div className="top"><div><div className="muted">Day {arcDay(start)} of {ARC_TOTAL}</div><h1>Progress</h1></div><button className="ghost gear" onClick={() => { setStartVal(getStart()); setConfirm(false); setSettings(true) }}>⚙️</button></div>
+      <div className="top"><div><div className="muted">Day {arcDay(start)} of {ARC_TOTAL}</div><h1>Progress</h1></div><button className="ghost gear" onClick={() => { setStartVal(getStart()); setNameVal(getSettings().name ?? 'Usama'); setConfirm(false); setSettings(true) }}>⚙️</button></div>
       <div className="stats">
         <div className="card st"><b>{avg}</b><small>Avg score</small></div>
         <div className="card st"><b>{current}🔥</b><small>Streak · best {best}</small></div>
@@ -204,6 +209,9 @@ function Progress({ history }: { history: History }) {
         })}
       </div>
 
+      <h2>Intake trends</h2>
+      <Trends history={history} onPick={setPick} />
+
       {missedMap.length > 0 && (
         <>
           <h2>What you miss most</h2>
@@ -230,9 +238,14 @@ function Progress({ history }: { history: History }) {
       </Sheet>
 
       <Sheet open={settings} onClose={() => setSettings(false)} title="Settings">
-        <label className="lbl">Arc start date (Day 1)<input className="field" type="date" max={t} value={startVal} onChange={(e) => setStartVal(e.target.value)} /></label>
-        <button className="cta wide" onClick={() => { if (startVal) { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ start: startVal })); location.reload() } }}>Save start date</button>
+        <label className="lbl">Your name<input className="field" value={nameVal} maxLength={24} onChange={(e) => setNameVal(e.target.value)} /></label>
+        <button className="cta wide" onClick={() => { saveSettings({ name: nameVal.trim() || 'Usama' }); location.reload() }}>Save name</button>
         <div className="sep" />
+        <label className="lbl">Arc start date (Day 1)<input className="field" type="date" max={t} value={startVal} onChange={(e) => setStartVal(e.target.value)} /></label>
+        <button className="cta wide" onClick={() => { if (startVal) { saveSettings({ start: startVal }); location.reload() } }}>Save start date</button>
+        <div className="sep" />
+        <div className="muted small" style={{ marginBottom: 8 }}>Your daily logs are stored only on this device. Export a backup regularly; the CSV opens in Excel or Google Sheets.</div>
+        <div className="btns" style={{ marginBottom: 8 }}><button className="ghost grow" onClick={exportCSV}>Export daily log (CSV)</button></div>
         <div className="btns"><button className="ghost grow" onClick={exportData}>Export backup</button><label className="ghost grow filebtn">Import backup<input type="file" accept="application/json" onChange={(e) => importData(e.target.files?.[0])} /></label></div>
         <div className="sep" />
         <div className="muted small" style={{ marginBottom: 8 }}>Removes the sample days and starts Day 1 today. Your habits, meals, roadmap and learning progress are kept.</div>

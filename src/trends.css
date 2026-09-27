@@ -1,0 +1,22 @@
+.trends { display: flex; flex-direction: column; gap: 12px; }
+.tchips { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tchips::-webkit-scrollbar { display: none; }
+.tchips button { flex: none; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05); font-size: 13px; color: var(--mut); font-weight: 600; }
+.tchips button.act { background: rgba(125,211,252,.18); border-color: rgba(125,211,252,.6); color: var(--ice); }
+.tchips.r { justify-content: center; }
+.tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.tstats b { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 17px; }
+.tstats small { color: var(--mut); font-size: 11px; }
+.tplot { position: relative; height: 200px; margin-top: 8px; }
+.tbars { position: absolute; inset: 0; display: flex; gap: 3px; }
+.tcol { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; }
+.tcol:disabled { cursor: default; }
+.tval { font-size: 9.5px; color: #cbd5e1; height: 12px; flex: none; }
+.tarea { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.tbar { width: 100%; max-width: 26px; border-radius: 6px 6px 3px 3px; min-height: 3px; }
+.tcol small { color: var(--mut); font-size: 9.5px; height: 12px; line-height: 12px; flex: none; }
+.tgoal { position: absolute; left: 0; right: 0; border-top: 1.5px dashed rgba(52,211,153,.75); z-index: 2; pointer-events: none; }
+.tgoal span { position: absolute; right: 0; top: -14px; font-size: 10px; color: #34D399; background: rgba(11,18,32,.6); padding: 0 4px; border-radius: 4px; }
+.ctr2 { text-align: center; }
+.tgw { position: absolute; left: 0; right: 0; top: 14px; bottom: 14px; z-index: 2; pointer-events: none; }
+.tgoal { position: absolute; left: 0; right: 0; }

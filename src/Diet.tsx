@@ -23,11 +23,11 @@ function Macro({ label, val, goal, color, limit, unit = 'g', note }: { label: st
 }
 
 export default function Diet() {
-  const [glasses, setGlasses] = useDaily('wa-water-v2', 5, 0)
-  const [cups, setCups] = useDaily('wa-chai-v2', 2, 0)
+  const [glasses, setGlasses] = useDaily('wa-water-v2', 0, 0)
+  const [cups, setCups] = useDaily('wa-chai-v2', 0, 0)
   const [pref, setPref] = useLocal<ChaiPref>('wa-chaipref-v1', CHAI_DEFAULT)
   const [meals, setMeals] = useLocal<Meal[]>('wa-meals-plan-v1', MEALS)
-  const [eatenIds, setEaten] = useDaily<string[]>('wa-eaten-v2', ['m1', 'm2'], [])
+  const [eatenIds, setEaten] = useDaily<string[]>('wa-eaten-v2', [], [])
   const [goals, setGoals] = useLocal('wa-goals', GOALS)
   const [draft, setDraft] = useState<Draft | null>(null)
   const [gsheet, setGsheet] = useState(false)

@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ARC_TOTAL, HABITS, LEVELS, PILLARS, START_DONE, type Habit, type Pillar } from './data'
+import { ARC_TOTAL, HABITS, LEVELS, PILLARS, type Habit, type Pillar } from './data'
 import Diet from './Diet'
 import Focus from './Focus'
 import Health from './Health'
 import { LEARN_TOTAL } from './Learn'
 import {
-  HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, seedHistory, SETTINGS_KEY, startFresh, streakOf, todayStr, type DayLog, type History,
+  HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, SETTINGS_KEY, startFresh, streakOf, todayStr, type DayLog, type History,
 } from './logic'
 import { Check, Confetti, Ring, Sheet, Snow, buzz, useCount, useDaily, useLocal } from './ui'
 import './App.css'
@@ -251,9 +251,9 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 export default function App() {
   const [tab, setTab] = useState<Tab>('today')
   const [habits, setHabits] = useLocal<Habit[]>('wa-habits-v1', HABITS)
-  const [done, setDone] = useDaily<string[]>('wa-done-v3', START_DONE, [])
+  const [done, setDone] = useDaily<string[]>('wa-done-v3', [], [])
   const [history, setHistory] = useState<History>(() => {
-    if (!localStorage.getItem(HISTORY_KEY)) localStorage.setItem(HISTORY_KEY, JSON.stringify(seedHistory()))
+    if (!localStorage.getItem(HISTORY_KEY)) localStorage.setItem(HISTORY_KEY, JSON.stringify({}))
     getStart()
     return readHistory()
   })

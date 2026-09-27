@@ -26,3 +26,8 @@
 .calc { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
 .cta.danger2 { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 8px 24px #ef444455; }
 .ghost.wide { width: 100%; }
+
+.sheet { display: flex; flex-direction: column; max-height: 88dvh; overflow: hidden; padding-bottom: 0; }
+.sheet .grabwrap { touch-action: none; padding: 6px 0 2px; cursor: grab; }
+.sheet h3 { touch-action: none; flex: none; }
+.sheetbody { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding-bottom: calc(env(safe-area-inset-bottom) + 26px); }

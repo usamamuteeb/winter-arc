@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HEALTH_GOALS, WL_DEFAULT, type Habit, type WeightEntry } from './data'
-import { addDays, dstr, label, parseD, sampleWeights, shortLabel, todayStr, type History } from './logic'
+import { addDays, dstr, label, parseD, shortLabel, todayStr, type History } from './logic'
 import { Check, Ring, Sheet, SwipeRow, buzz, uid, useCount, useDaily, useLocal } from './ui'
 
 const EMO = ['😩', '😕', '😐', '🙂', '😄']
@@ -33,9 +33,9 @@ export default function Health({ done, toggle, setOn, habits, setHabits, history
   done: string[]; toggle: (id: string) => void; setOn: (id: string, on: boolean) => void
   habits: Habit[]; setHabits: (h: Habit[]) => void; history: History
 }) {
-  const [hd, setHd] = useDaily('wa-hday-v2', { steps: 5400, sleep: 7, mood: 4, energy: 3 }, { steps: 0, sleep: 0, mood: 3, energy: 3 })
+  const [hd, setHd] = useDaily('wa-hday-v2', { steps: 0, sleep: 0, mood: 3, energy: 3 }, { steps: 0, sleep: 0, mood: 3, energy: 3 })
   const [hg, setHg] = useLocal('wa-hgoals-v1', HEALTH_GOALS)
-  const [weights, setWeights] = useLocal<WeightEntry[]>('wa-weights-v2', sampleWeights())
+  const [weights, setWeights] = useLocal<WeightEntry[]>('wa-weights-v2', [])
   const [wl, setWl] = useLocal('wa-wl-v1', WL_DEFAULT)
   const [wd, setWd] = useState<WDraft | null>(null)
   const [gd, setGd] = useState<GDraft | null>(null)
@@ -143,7 +143,12 @@ export default function Health({ done, toggle, setOn, habits, setHabits, history
             </div>
             <div className="chips"><span>BMI {bmi} · {bmiCat}</span>{etaDate && <span className="p">Goal date ≈ {etaDate}</span>}{!etaDate && <span className="p">Goal reached 🎉</span>}</div>
           </>
-        ) : <div className="muted small">Tap Log weight below to record your starting weight.</div>}
+        ) : (
+          <div className="startw">
+            <div className="muted small">Start here: record today's weight. Every change after this is measured from it.</div>
+            <button className="cta wide" onClick={() => openWeight()}>Log my starting weight</button>
+          </div>
+        )}
       </div>
 
       <div className="card">

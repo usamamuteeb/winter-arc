@@ -22,7 +22,7 @@ export const SETTINGS_KEY = 'wa-settings-v1'
 export const getStart = (): string => {
   const s = readJSON<{ start?: string }>(SETTINGS_KEY, {})
   if (s.start) return s.start
-  const start = addDays(todayStr(), -11)
+  const start = todayStr()
   localStorage.setItem(SETTINGS_KEY, JSON.stringify({ start }))
   return start
 }
@@ -133,4 +133,11 @@ export function startFresh() {
   localStorage.setItem('wa-chai-v2', JSON.stringify({ d: t, v: 0 }))
   localStorage.setItem('wa-eaten-v2', JSON.stringify({ d: t, v: [] }))
   localStorage.setItem('wa-hday-v2', JSON.stringify({ d: t, v: { steps: 0, sleep: 0, mood: 3, energy: 3 } }))
+}
+
+/** one-time clean slate: removes the sample data that shipped with the first versions */
+export function migrateFresh() {
+  if (localStorage.getItem('wa-fresh-v2')) return
+  startFresh()
+  localStorage.setItem('wa-fresh-v2', '1')
 }

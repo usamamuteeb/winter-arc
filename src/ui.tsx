@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion, animate } from 'framer-motion'
+import { AnimatePresence, motion, animate, useDragControls } from 'framer-motion'
 import { readDaily, todayStr } from './logic'
 
 export const buzz = () => { try { navigator.vibrate?.(12) } catch { /* ignore */ } }
@@ -75,15 +75,16 @@ export function Confetti({ fire }: { fire: number }) {
 
 /** bottom sheet */
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+  const controls = useDragControls()
   return createPortal(
     <AnimatePresence>
       {open && [
         <motion.div key="scrim" className="scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />,
         <motion.div key="sheet" className="sheet" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-          drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} onDragEnd={(_, i) => { if (i.offset.y > 120) onClose() }}>
-          <div className="grab" />
-          <h3>{title}</h3>
-          {children}
+          drag="y" dragControls={controls} dragListener={false} dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.6 }} onDragEnd={(_, i) => { if (i.offset.y > 120) onClose() }}>
+          <div className="grabwrap" onPointerDown={(e) => controls.start(e)}><div className="grab" /></div>
+          <h3 onPointerDown={(e) => controls.start(e)}>{title}</h3>
+          <div className="sheetbody">{children}</div>
         </motion.div>,
       ]}
     </AnimatePresence>,

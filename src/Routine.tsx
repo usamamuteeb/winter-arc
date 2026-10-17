@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SwipeRow, buzz, useDaily, useLocal } from './ui'
+import { SwipeRow, buzz, useDaily } from './ui'
+import { type RoutineEntry } from './data'
 import { recordPrayerDay } from './prayers'
 import './routine.css'
 
@@ -14,13 +15,9 @@ const PRAYERS: Prayer[] = [
   { id: 'isha', name: 'Isha' },
 ]
 
-export default function Routine() {
-  const [routines, setRoutines] = useLocal<string>('wa-routines-v1', JSON.stringify([
-    { id: 'r1', title: 'Wake up at 5:45 AM', time: '05:45' },
-    { id: 'r2', title: 'Phone off at 9:30 PM', time: '21:30' },
-    { id: 'r3', title: "Plan tomorrow's 3 priorities", time: '21:40' },
-    { id: 'r4', title: 'Sleep by 10:30 PM', time: '22:30' },
-  ]))
+export default function Routine({ routines: routineList, setRoutines, done, toggle }: {
+  routines: RoutineEntry[]; setRoutines: (routines: RoutineEntry[]) => void; done: string[]; toggle: (id: string) => void
+}) {
   const [prayers, setPrayers] = useDaily<Record<string, boolean>>('wa-prayers-v1', {}, {})
   const [newRoutine, setNewRoutine] = useState('')
   const [newTime, setNewTime] = useState('')
@@ -28,7 +25,6 @@ export default function Routine() {
   const [editTitle, setEditTitle] = useState('')
   const [editTime, setEditTime] = useState('')
 
-  const routineList = JSON.parse(routines)
   const prayersDone = Object.values(prayers).filter(Boolean).length
 
   const togglePrayer = (id: string) => {
@@ -42,15 +38,15 @@ export default function Routine() {
     if (!title || !newTime) return
     const id = Math.random().toString(36).slice(2, 9)
     const updated = [...routineList, { id, title, time: newTime }]
-    setRoutines(JSON.stringify(updated))
+    setRoutines(updated)
     setNewRoutine('')
     setNewTime('')
     buzz()
   }
 
   const deleteRoutine = (id: string) => {
-    const updated = routineList.filter((r: any) => r.id !== id)
-    setRoutines(JSON.stringify(updated))
+    const updated = routineList.filter((r) => r.id !== id)
+    setRoutines(updated)
     buzz()
   }
 
@@ -62,10 +58,10 @@ export default function Routine() {
 
   const saveEdit = () => {
     if (!editId || !editTitle.trim() || !editTime) return
-    const updated = routineList.map((r: any) =>
+    const updated = routineList.map((r) =>
       r.id === editId ? { ...r, title: editTitle.trim(), time: editTime } : r
     )
-    setRoutines(JSON.stringify(updated))
+    setRoutines(updated)
     setEditId(null)
     setEditTitle('')
     setEditTime('')
@@ -113,7 +109,7 @@ export default function Routine() {
       <h2>Daily Routines</h2>
       <div className="list">
         <AnimatePresence initial={false}>
-          {routineList.map((routine: any) =>
+          {routineList.map((routine) =>
             editId === routine.id ? (
               <motion.div
                 key={routine.id}
@@ -145,13 +141,14 @@ export default function Routine() {
             ) : (
               <SwipeRow
                 key={routine.id}
-                className="item"
+                className={`item ${done.includes(`routine:${routine.id}`) ? 'on' : ''}`}
                 onDelete={() => deleteRoutine(routine.id)}
               >
                 <span className="tx">
                   <span className="t">{routine.title}</span>
                   <span className="muted small">{routine.time}</span>
                 </span>
+                <button className="edit-btn" aria-label={`${done.includes(`routine:${routine.id}`) ? 'Mark incomplete' : 'Mark complete'}: ${routine.title}`} onClick={(e) => { e.stopPropagation(); toggle(`routine:${routine.id}`); buzz() }}>{done.includes(`routine:${routine.id}`) ? '✓' : '○'}</button>
                 <button className="edit-btn" onClick={(e) => { e.stopPropagation(); startEdit(routine) }}>✎</button>
               </SwipeRow>
             )

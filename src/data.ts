@@ -9,6 +9,13 @@ export const PILLARS: Record<Pillar, { label: string; weight: number; color: str
 }
 
 export interface Habit { id: string; pillar: Pillar; title: string; time?: string; xp: number }
+export interface RoutineEntry { id: string; title: string; time?: string }
+export const DEFAULT_ROUTINES: RoutineEntry[] = [
+  { id: 'r1', title: 'Wake up at 5:45 AM', time: '05:45' },
+  { id: 'r2', title: 'Phone off at 9:30 PM', time: '21:30' },
+  { id: 'r3', title: "Plan tomorrow's 3 priorities", time: '21:40' },
+  { id: 'r4', title: 'Sleep by 10:30 PM', time: '22:30' },
+]
 
 // SAMPLE DATA - replaced when you tap "Start fresh" in Progress > Settings
 export const HABITS: Habit[] = [

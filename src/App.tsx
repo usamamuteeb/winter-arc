@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ARC_TOTAL, HABITS, LEVELS, PILLARS, type Habit, type Pillar } from './data'
+import { ARC_TOTAL, DEFAULT_ROUTINES, HABITS, LEVELS, PILLARS, type Habit, type Pillar, type RoutineEntry } from './data'
 import Diet from './Diet'
 import Focus from './Focus'
 import Health from './Health'
@@ -9,7 +9,7 @@ import { LEARN_TOTAL } from './Learn'
 import Trends from './Trends'
 import { getPrayerMonth, getPrayerWeek, readPrayerHistory, type PrayerChartDay } from './prayers'
 import {
-  HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, getName, getSettings, saveSettings, startFresh, streakOf, toCSV, todayStr, type DayLog, type History,
+  HISTORY_KEY, ROUTINES_KEY, addDays, arcDay, getStart, grade, label, parseRoutines, readHistory, saveSnapshot, scoreOf, getName, getSettings, saveSettings, startFresh, streakOf, toCSV, todayHabits, todayStr, type DayLog, type History,
 } from './logic'
 import { Check, Confetti, Ring, Sheet, Snow, buzz, useCount, useDaily, useLocal } from './ui'
 import './App.css'
@@ -22,8 +22,8 @@ type Tab = 'today' | 'health' | 'diet' | 'focus' | 'routine' | 'progress'
 const scoreColor = (s: number) => (s >= 80 ? '#34D399' : s >= 50 ? '#7DD3FC' : '#F87171')
 
 /* ---------- TODAY ---------- */
-function Today({ habits, done, toggle, history }: { habits: Habit[]; done: string[]; toggle: (id: string) => void; history: History }) {
-  const items = habits.map((h) => ({ ...h, done: done.includes(h.id) }))
+function Today({ habits, routines, done, toggle, history }: { habits: Habit[]; routines: RoutineEntry[]; done: string[]; toggle: (id: string) => void; history: History }) {
+  const items = todayHabits(habits, routines).map((h) => ({ ...h, done: done.includes(h.id) }))
   const pillarPct = (p: Pillar) => { const l = items.filter((i) => i.pillar === p); return l.length ? l.filter((i) => i.done).length / l.length : 0 }
   const score = scoreOf(items)
   const shown = useCount(score)
@@ -323,6 +323,8 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
 export default function App() {
   const [tab, setTab] = useState<Tab>('today')
   const [habits, setHabits] = useLocal<Habit[]>('wa-habits-v1', HABITS)
+  const [routineStorage, setRoutineStorage] = useLocal<string>(ROUTINES_KEY, JSON.stringify(DEFAULT_ROUTINES))
+  const routines = parseRoutines(routineStorage)
   const [done, setDone] = useDaily<string[]>('wa-done-v3', [], [])
   const [history, setHistory] = useState<History>(() => {
     if (!localStorage.getItem(HISTORY_KEY)) localStorage.setItem(HISTORY_KEY, JSON.stringify({}))
@@ -349,11 +351,11 @@ export default function App() {
       <div className="bg" /><Snow />
       <AnimatePresence mode="wait">
         <motion.main key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }}>
-          {tab === 'today' && <Today habits={habits} done={done} toggle={toggle} history={history} />}
+          {tab === 'today' && <Today habits={habits} routines={routines} done={done} toggle={toggle} history={history} />}
           {tab === 'health' && <Health done={done} toggle={toggle} setOn={setOn} habits={habits} setHabits={setHabits} history={history} />}
           {tab === 'diet' && <Diet />}
           {tab === 'focus' && <Focus />}
-          {tab === 'routine' && <Routine />}
+          {tab === 'routine' && <Routine routines={routines} setRoutines={(next) => setRoutineStorage(JSON.stringify(next))} done={done} toggle={toggle} />}
           {tab === 'progress' && <Progress history={history} />}
         </motion.main>
       </AnimatePresence>

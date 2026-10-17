@@ -1,4 +1,4 @@
-import { HABITS, MEALS, PILLARS, type Habit, type Meal, type Pillar, type WeightEntry } from './data'
+import { DEFAULT_ROUTINES, HABITS, MEALS, PILLARS, type Habit, type Meal, type Pillar, type RoutineEntry, type WeightEntry } from './data'
 
 /* ---------- dates ---------- */
 export const pad = (n: number) => String(n).padStart(2, '0')
@@ -18,6 +18,22 @@ export function readDaily<T>(k: string, first: T, empty: T): T {
   try { const o = JSON.parse(r); return o.d === todayStr() ? (o.v as T) : empty } catch { return first }
 }
 export const HISTORY_KEY = 'wa-history-v1'
+export const ROUTINES_KEY = 'wa-routines-v1'
+export function parseRoutines(raw: string | RoutineEntry[]): RoutineEntry[] {
+  try {
+    const value: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw
+    const entries = typeof value === 'string' ? JSON.parse(value) as unknown : value
+    if (!Array.isArray(entries)) return []
+    return entries.filter((item): item is RoutineEntry => !!item && typeof item.id === 'string' && typeof item.title === 'string')
+  } catch { return [] }
+}
+export function todayHabits(habits: Habit[], routines: RoutineEntry[]): Habit[] {
+  const items = habits.filter((h) => h.pillar !== 'focus' && h.pillar !== 'routine')
+  const linkedRoutines = routines.map((r) => ({
+    id: `routine:${r.id}`, pillar: 'routine' as const, title: r.title, time: r.time, xp: 10,
+  }))
+  return [...items, ...linkedRoutines].sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
+}
 export const SETTINGS_KEY = 'wa-settings-v1'
 export interface Settings { start?: string; name?: string }
 export const getSettings = (): Settings => readJSON<Settings>(SETTINGS_KEY, {})
@@ -88,7 +104,8 @@ export function buildSnapshot(): DayLog {
   const t = todayStr()
   const habits = readJSON<Habit[]>('wa-habits-v1', HABITS)
   const done = readDaily<string[]>('wa-done-v3', [], [])
-  const items: LogItem[] = habits.map((h) => ({ id: h.id, title: h.title, pillar: h.pillar, xp: h.xp, done: done.includes(h.id) }))
+  const routines = parseRoutines(localStorage.getItem(ROUTINES_KEY) ?? JSON.stringify(DEFAULT_ROUTINES))
+  const items: LogItem[] = todayHabits(habits, routines).map((h) => ({ id: h.id, title: h.title, pillar: h.pillar, xp: h.xp, done: done.includes(h.id) }))
   const plan = readJSON<Meal[]>('wa-meals-plan-v1', MEALS)
   const eatenIds = readDaily<string[]>('wa-eaten-v2', [], [])
   const eaten = plan.filter((m) => eatenIds.includes(m.id))

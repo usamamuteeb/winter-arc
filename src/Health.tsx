@@ -84,11 +84,16 @@ export default function Health({ done, toggle, setOn, habits, setHabits, history
     if (!wd) return
     const kg = parseFloat(wd.kg); if (!kg || kg < 20 || kg > 400) return
     const e: WeightEntry = { id: wd.id ?? uid(), date: wd.date || today, kg: r1(kg), waist: parseFloat(wd.waist) || undefined }
-    const rest = weights.filter((x) => x.id !== e.id && x.date !== e.date)
-    setWeights([...rest, e]); if (e.date === today) setOn('h5', true)
+    const updated = [...weights.filter((x) => x.id !== e.id && x.date !== e.date), e]
+    setWeights(updated); setOn('h5', updated.some((x) => x.date === today))
     setWd(null); buzz()
   }
-  const delWeight = (id: string) => { setWeights(weights.filter((x) => x.id !== id)); setWd(null) }
+  const delWeight = (id: string) => {
+    const remaining = weights.filter((x) => x.id !== id)
+    setWeights(remaining)
+    setOn('h5', remaining.some((x) => x.date === today))
+    setWd(null)
+  }
 
   const openGoal = () => setGd({ target: String(wl.target), rate: wl.rate, height: String(wl.height), age: String(wl.age), sex: wl.sex, activity: wl.activity })
   const saveGoal = (useDiet: boolean) => {
@@ -269,7 +274,7 @@ export default function Health({ done, toggle, setOn, habits, setHabits, history
               <label>Sleep goal (hours)<input className="field" inputMode="decimal" value={tg.sleep} onChange={(e) => setTg({ ...tg, sleep: e.target.value })} /></label>
               <label>Daily steps goal<input className="field" inputMode="decimal" value={tg.steps} onChange={(e) => setTg({ ...tg, steps: e.target.value })} /></label>
             </div>
-            <button className="cta wide" onClick={() => { setHg({ sleep: parseFloat(tg.sleep) || hg.sleep, steps: parseInt(tg.steps) || hg.steps }); setTg(null); buzz() }}>Save targets</button>
+            <button className="cta wide" onClick={() => { const steps = parseInt(tg.steps) || hg.steps; setHg({ sleep: parseFloat(tg.sleep) || hg.sleep, steps }); setOn('h3', hd.steps >= steps); setTg(null); buzz() }}>Save targets</button>
           </>
         )}
       </Sheet>

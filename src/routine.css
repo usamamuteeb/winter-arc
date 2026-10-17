@@ -8,79 +8,166 @@
   font-size: 16px;
 }
 
-.prayers-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+/* Compact prayer layout - all 5 fit on screen */
+.prayers-compact {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 16px;
 }
 
-.prayer-item {
+.prayer-compact {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 8px;
+  gap: 6px;
+  padding: 8px 4px;
   background: transparent;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 6px;
+  flex: 1;
+  max-width: 60px;
   transition: background 200ms;
-  position: relative;
 }
 
-.prayer-item:hover {
+.prayer-compact:hover {
   background: rgba(196, 181, 253, 0.1);
 }
 
-.prayer-item.done {
+.prayer-compact.done {
   background: rgba(196, 181, 253, 0.15);
 }
 
+.prayer-circle {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(196, 181, 253, 0.2);
+  transition: all 200ms;
+}
+
+.prayer-compact.done .prayer-circle {
+  background: rgba(196, 181, 253, 0.4);
+  box-shadow: 0 0 12px rgba(196, 181, 253, 0.5);
+}
+
 .prayer-icon {
-  font-size: 24px;
+  font-size: 20px;
 }
 
-.prayer-name {
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  color: #e2e8f0;
-}
-
-
-.prayer-check {
+.prayer-tick {
   position: absolute;
-  top: -2px;
-  right: 2px;
-  width: 20px;
-  height: 20px;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
   background: #34D399;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   color: #0f172a;
   font-weight: bold;
+  border: 2px solid #0B1220;
+}
+
+.prayer-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: #e2e8f0;
+  line-height: 1.2;
 }
 
 .prayer-progress {
-  text-align: center;
-  padding: 12px;
-  background: rgba(196, 181, 253, 0.08);
-  border-radius: 6px;
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.prayer-progress b {
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C4B5FD, #E9D5FF);
+  border-radius: 4px;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.progress-text b {
   color: #C4B5FD;
   font-weight: 600;
 }
 
+/* Edit Routine Inline */
+.edit-routine-inline {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px;
+  background: rgba(196, 181, 253, 0.08);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.edit-inputs {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.edit-inputs .field {
+  flex: 1;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.field-time {
+  width: 70px;
+  padding: 8px 6px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #e2e8f0;
+}
+
+.field-time:focus {
+  outline: none;
+  border-color: #C4B5FD;
+  background: rgba(196, 181, 253, 0.1);
+}
+
+.edit-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.edit-btns button {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* Add routine */
 .add-routine {
   margin-top: 24px;
 }
@@ -95,49 +182,56 @@
   margin-bottom: 8px;
 }
 
+/* Edit button on items */
 .edit-btn {
   background: none;
   border: none;
   color: #C4B5FD;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 6px 12px;
   transition: color 200ms;
+  flex-shrink: 0;
 }
 
 .edit-btn:hover {
   color: #E9D5FF;
 }
 
-.edit-routine {
-  padding: 16px;
-}
-
-.edit-routine .field {
-  margin-bottom: 8px;
-}
-
-.edit-routine .btns {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-routine .cta,
-.edit-routine .ghost {
-  flex: 1;
-}
-
 @media (max-width: 600px) {
-  .prayers-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+  .prayers-compact {
+    gap: 2px;
   }
 
-  .prayer-item {
-    padding: 8px 4px;
+  .prayer-compact {
+    max-width: 55px;
+    padding: 6px 3px;
   }
 
-  .prayer-name {
-    font-size: 11px;
+  .prayer-circle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .prayer-icon {
+    font-size: 18px;
+  }
+
+  .prayer-label {
+    font-size: 10px;
+  }
+
+  .edit-inputs {
+    gap: 4px;
+  }
+
+  .edit-inputs .field {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .field-time {
+    width: 60px;
+    padding: 6px 4px;
   }
 }

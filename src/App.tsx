@@ -136,6 +136,15 @@ function Progress({ history }: { history: History }) {
   const [startVal, setStartVal] = useState(getStart())
   const [nameVal, setNameVal] = useState(getName())
   const start = getStart(), t = todayStr()
+  const prayerLabels = { fajr: 'Fajr', zohar: 'Zohar', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha' }
+  const todaysPrayers = (() => {
+    try {
+      const stored = localStorage.getItem('wa-prayers-v1')
+      if (!stored) return {}
+      const data = JSON.parse(stored)
+      return (data.d === t ? data.v : {}) as Record<string, boolean>
+    } catch { return {} }
+  })()
   const logs = Object.values(history).sort((a, b) => a.date.localeCompare(b.date))
   const avg = logs.length ? Math.round(logs.reduce((a, l) => a + l.score, 0) / logs.length) : 0
   const { current, best } = streakOf(history)
@@ -233,6 +242,26 @@ function Progress({ history }: { history: History }) {
       ))}</div>
       <h2>Pillar balance</h2>
       <div className="card center"><Radar vals={pillarAvg} /></div>
+
+      <h2>Daily Routines & Prayers</h2>
+      <div className="card routine-progress">
+        <div className="routine-section">
+          <div className="routine-header">🕌 Five Daily Prayers</div>
+          <div className="prayers-list">
+            {Object.entries(prayerLabels).map(([id, name]) => (
+              <div key={id} className="prayer-stat">
+                <span className="prayer-name">{name}</span>
+                <span className={`prayer-status ${todaysPrayers[id] ? 'done' : 'pending'}`}>
+                  {todaysPrayers[id] ? '✓' : '◯'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="progress-summary">
+            {Object.values(todaysPrayers).filter(Boolean).length}/{Object.entries(prayerLabels).length} done today
+          </div>
+        </div>
+      </div>
 
       <Sheet open={!!pick} onClose={() => setPick(null)} title={pick ? (pick === t ? `Today · ${label(pick)}` : label(pick)) : ''}>
         {pick && <DayDetail log={history[pick]} date={pick} />}

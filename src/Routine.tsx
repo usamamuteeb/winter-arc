@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { PILLARS } from './data'
-import { Ring, SwipeRow, buzz, useDaily, useLocal } from './ui'
+import { SwipeRow, buzz, useDaily, useLocal } from './ui'
 import './routine.css'
 
 interface Prayer { id: string; name: string }
@@ -83,30 +82,27 @@ export default function Routine() {
       {/* Prayer Checkbar */}
       <div className="card prayer-bar">
         <h2>Five Daily Prayers</h2>
-        <div className="prayers-grid">
+        <div className="prayers-compact">
           {PRAYERS.map((prayer) => (
             <motion.button
               key={prayer.id}
-              className={`prayer-item ${prayers[prayer.id] ? 'done' : ''}`}
+              className={`prayer-compact ${prayers[prayer.id] ? 'done' : ''}`}
               onClick={() => { togglePrayer(prayer.id); buzz() }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
             >
-              <Ring
-                size={64}
-                stroke={5}
-                pct={prayers[prayer.id] ? 1 : 0}
-                color={PILLARS.routine.color}
-                glow={prayers[prayer.id]}
-              >
+              <div className="prayer-circle">
                 <span className="prayer-icon">🕌</span>
-              </Ring>
-              <div className="prayer-name">{prayer.name}</div>
-              {prayers[prayer.id] && <div className="prayer-check">✓</div>}
+                {prayers[prayer.id] && <span className="prayer-tick">✓</span>}
+              </div>
+              <span className="prayer-label">{prayer.name}</span>
             </motion.button>
           ))}
         </div>
         <div className="prayer-progress">
-          <b>{prayersDone} / {PRAYERS.length}</b> prayers done
+          <div className="progress-bar">
+            <motion.div className="progress-fill" animate={{ width: `${(prayersDone / PRAYERS.length) * 100}%` }} />
+          </div>
+          <span className="progress-text"><b>{prayersDone}</b> of <b>{PRAYERS.length}</b></span>
         </div>
       </div>
 
@@ -118,27 +114,29 @@ export default function Routine() {
             editId === routine.id ? (
               <motion.div
                 key={routine.id}
-                className="card edit-routine"
+                className="edit-routine-inline"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <input
-                  className="field"
-                  type="text"
-                  placeholder="Routine title"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                />
-                <input
-                  className="field"
-                  type="time"
-                  value={editTime}
-                  onChange={(e) => setEditTime(e.target.value)}
-                />
-                <div className="btns">
-                  <button className="cta" onClick={saveEdit}>Save</button>
-                  <button className="ghost" onClick={cancelEdit}>Cancel</button>
+                <div className="edit-inputs">
+                  <input
+                    className="field"
+                    type="text"
+                    placeholder="Title"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                  <input
+                    className="field-time"
+                    type="time"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                  />
+                </div>
+                <div className="edit-btns">
+                  <button className="cta sm" onClick={saveEdit}>✓</button>
+                  <button className="ghost sm" onClick={cancelEdit}>✕</button>
                 </div>
               </motion.div>
             ) : (

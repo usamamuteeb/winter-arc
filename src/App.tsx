@@ -7,6 +7,7 @@ import Health from './Health'
 import Routine from './Routine'
 import { LEARN_TOTAL } from './Learn'
 import Trends from './Trends'
+import { getPrayerMonth, getPrayerWeek, readPrayerHistory, type PrayerChartDay } from './prayers'
 import {
   HISTORY_KEY, addDays, arcDay, getStart, grade, label, readHistory, saveSnapshot, scoreOf, getName, getSettings, saveSettings, startFresh, streakOf, toCSV, todayStr, type DayLog, type History,
 } from './logic'
@@ -128,6 +129,45 @@ function DayDetail({ log, date }: { log?: DayLog; date: string }) {
   )
 }
 
+function PrayerWeekChart({ days }: { days: PrayerChartDay[] }) {
+  const tracked = days.filter(day => day.percent !== null).length
+  return <div className="prayer-week-chart" role="group" aria-label="Daily prayer completion for this week on a zero to one hundred percent scale">
+    <div className="prayer-week-axis"><span>100%</span><span>50%</span><span>0%</span></div>
+    <div className="prayer-week-grid">{days.map(day => {
+      const percent = day.percent
+      const name = new Date(`${day.date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short' })
+      const detail = percent === null ? `${label(day.date)} · ${day.future ? 'Not yet tracked' : 'No log'}` : `${label(day.date)} · ${percent}% (${Math.round(percent / 20)} of 5 prayers)`
+      return <div className={`prayer-week-day ${percent === null ? (day.future ? 'future' : 'no-log') : ''}`} key={day.date} title={detail} tabIndex={0} role="img" aria-label={detail}>
+        <div className="prayer-week-plot"><div className="prayer-week-guides"><i /><i /></div>{percent !== null && <div className="prayer-week-bar" style={{ height: `${percent}%` }} />}</div>
+        <strong>{percent === null ? '–' : `${percent}%`}</strong><small>{name}</small>
+      </div>
+    })}</div>
+    <p className="prayer-chart-note">{tracked ? `${tracked} of 7 days tracked` : 'No prayer days tracked this week'}. Hatched: future. Dotted: no log.</p>
+  </div>
+}
+
+function PrayerMonthChart({ days }: { days: PrayerChartDay[] }) {
+  const width = 360, height = 144, inset = 14
+  const x = (index: number) => inset + index * (width - inset * 2) / Math.max(1, days.length - 1)
+  const y = (percent: number) => 10 + (100 - percent) * 1.12
+  const line = days.reduce<{ path: string; connected: boolean }>((result, day, i) => {
+    if (day.percent === null) return { ...result, connected: false }
+    return { path: `${result.path}${result.connected ? 'L' : 'M'}${x(i).toFixed(1)},${y(day.percent).toFixed(1)}`, connected: true }
+  }, { path: '', connected: false }).path
+  const tracked = days.filter(day => day.percent !== null).length
+  const month = new Date(`${days[0].date}T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  return <div className="prayer-month-chart">
+    <div className="prayer-month-title">{month}</div>
+    <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={`Daily prayer completion percentages for ${month}`}>
+      {[0, 50, 100].map(value => <g key={value}><line x1={inset} x2={width - inset} y1={y(value)} y2={y(value)} className="prayer-month-guide" /><text x="0" y={y(value) + 3} className="prayer-month-axis">{value}%</text></g>)}
+      {line && <path d={line} className="prayer-month-line" />}
+      {days.map((day, i) => day.percent === null ? <g key={day.date} aria-label={`${label(day.date)} · ${day.future ? 'Not yet tracked' : 'No log'}`}><title>{`${label(day.date)} · ${day.future ? 'Not yet tracked' : 'No log'}`}</title>{day.future ? <rect x={x(i) - 2.5} y="128" width="5" height="5" className="prayer-month-future" /> : <circle cx={x(i)} cy="130.5" r="2.5" className="prayer-month-missing" />}</g> : <circle key={day.date} cx={x(i)} cy={y(day.percent)} r="3.4" className="prayer-month-point" tabIndex={0} aria-label={`${label(day.date)}: ${day.percent}% completion, ${Math.round(day.percent / 20)} of 5 prayers`}><title>{`${label(day.date)} · ${day.percent}% (${Math.round(day.percent / 20)} of 5 prayers)`}</title></circle>)}
+      {days.map((day, i) => (i === 0 || (i + 1) % 5 === 0 || i === days.length - 1) && <text key={day.date} x={x(i)} y={height - 4} textAnchor="middle" className="prayer-month-axis">{i + 1}</text>)}
+    </svg>
+    <p className="prayer-chart-note">{tracked ? `${tracked} of ${days.length} days tracked` : 'No prayer days tracked this month'}. Hollow dots: no log. Squares: future.</p>
+  </div>
+}
+
 function Progress({ history }: { history: History }) {
   const [learned] = useLocal<string[]>('wa-learned', [])
   const [pick, setPick] = useState<string | null>(null)
@@ -136,52 +176,9 @@ function Progress({ history }: { history: History }) {
   const [startVal, setStartVal] = useState(getStart())
   const [nameVal, setNameVal] = useState(getName())
   const start = getStart(), t = todayStr()
-  const prayerLabels = { fajr: 'Fajr', zohar: 'Zohar', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha' }
-  const todaysPrayers = (() => {
-    try {
-      const stored = localStorage.getItem('wa-prayers-v1')
-      if (!stored) return {}
-      const data = JSON.parse(stored)
-      return (data.d === t ? data.v : {}) as Record<string, boolean>
-    } catch { return {} }
-  })()
-
-  // Prayer stats for weekly and monthly
-  const getPrayerStats = (days: number) => {
-    const stats: Record<string, { done: number; total: number }> = {}
-    Object.keys(prayerLabels).forEach(p => { stats[p] = { done: 0, total: 0 } })
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = addDays(t, -i)
-      try {
-        const key = `wa-prayers-v1`
-        const stored = localStorage.getItem(key)
-        if (!stored) continue
-        const data = JSON.parse(stored)
-        if (data.d === d) {
-          Object.entries(data.v).forEach(([prayerId, done]: [string, any]) => {
-            if (stats[prayerId]) {
-              stats[prayerId].total++
-              if (done) stats[prayerId].done++
-            }
-          })
-        }
-      } catch {}
-    }
-    return stats
-  }
-
-  const weeklyPrayers = getPrayerStats(7)
-  const monthlyPrayers = getPrayerStats(30)
-
-  const getPrayerPct = (stats: Record<string, { done: number; total: number }>) => {
-    const total = Object.values(stats).reduce((a, s) => a + s.total, 0)
-    const done = Object.values(stats).reduce((a, s) => a + s.done, 0)
-    return total > 0 ? Math.round((done / total) * 100) : 0
-  }
-
-  const weeklyPct = getPrayerPct(weeklyPrayers)
-  const monthlyPct = getPrayerPct(monthlyPrayers)
+  const prayerHistory = readPrayerHistory()
+  const weeklyPrayerDays = getPrayerWeek(prayerHistory, t)
+  const monthlyPrayerDays = getPrayerMonth(prayerHistory, t)
   const logs = Object.values(history).sort((a, b) => a.date.localeCompare(b.date))
   const avg = logs.length ? Math.round(logs.reduce((a, l) => a + l.score, 0) / logs.length) : 0
   const { current, best } = streakOf(history)
@@ -280,46 +277,18 @@ function Progress({ history }: { history: History }) {
       <h2>Pillar balance</h2>
       <div className="card center"><Radar vals={pillarAvg} /></div>
 
-      <h2>Daily Routines & Prayers</h2>
+      <h2>Prayer progress</h2>
       <div className="card routine-progress">
         <div className="routine-section">
-          <div className="routine-header">🕌 Five Daily Prayers</div>
-
-          {/* Today's Prayers */}
-          <div className="prayer-period">
-            <div className="period-label">Today</div>
-            <div className="prayers-list">
-              {Object.entries(prayerLabels).map(([id, name]) => (
-                <div key={id} className="prayer-stat">
-                  <span className="prayer-name">{name}</span>
-                  <span className={`prayer-status ${todaysPrayers[id] ? 'done' : 'pending'}`}>
-                    {todaysPrayers[id] ? '✓' : '◯'}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="progress-summary">
-              {Object.values(todaysPrayers).filter(Boolean).length}/{Object.entries(prayerLabels).length} done today
-            </div>
-          </div>
-
-          {/* Weekly Progress */}
-          <div className="prayer-period">
-            <div className="period-label">This Week (7 days)</div>
-            <div className="progress-bar">
-              <motion.div className="progress-fill" animate={{ width: `${weeklyPct}%` }} />
-            </div>
-            <div className="progress-text">{weeklyPct}% complete</div>
-          </div>
-
-          {/* Monthly Progress */}
-          <div className="prayer-period">
-            <div className="period-label">This Month (30 days)</div>
-            <div className="progress-bar">
-              <motion.div className="progress-fill" animate={{ width: `${monthlyPct}%` }} />
-            </div>
-            <div className="progress-text">{monthlyPct}% complete</div>
-          </div>
+          <div className="routine-header">Five Daily Prayers: daily completion</div>
+          <section className="prayer-period" aria-labelledby="weekly-prayer-title">
+            <div id="weekly-prayer-title" className="period-label">This week: daily completion</div>
+            <PrayerWeekChart days={weeklyPrayerDays} />
+          </section>
+          <section className="prayer-period" aria-labelledby="monthly-prayer-title">
+            <div id="monthly-prayer-title" className="period-label">This month: daily completion</div>
+            <PrayerMonthChart days={monthlyPrayerDays} />
+          </section>
         </div>
       </div>
 

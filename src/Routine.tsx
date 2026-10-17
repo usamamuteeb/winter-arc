@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SwipeRow, buzz, useDaily, useLocal } from './ui'
+import { recordPrayerDay } from './prayers'
 import './routine.css'
 
 interface Prayer { id: string; name: string }
@@ -31,7 +32,9 @@ export default function Routine() {
   const prayersDone = Object.values(prayers).filter(Boolean).length
 
   const togglePrayer = (id: string) => {
-    setPrayers({ ...prayers, [id]: !prayers[id] })
+    const next = { ...prayers, [id]: !prayers[id] }
+    recordPrayerDay(next)
+    setPrayers(next)
   }
 
   const addRoutine = () => {

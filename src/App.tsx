@@ -145,6 +145,43 @@ function Progress({ history }: { history: History }) {
       return (data.d === t ? data.v : {}) as Record<string, boolean>
     } catch { return {} }
   })()
+
+  // Prayer stats for weekly and monthly
+  const getPrayerStats = (days: number) => {
+    const stats: Record<string, { done: number; total: number }> = {}
+    Object.keys(prayerLabels).forEach(p => { stats[p] = { done: 0, total: 0 } })
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = addDays(t, -i)
+      try {
+        const key = `wa-prayers-v1`
+        const stored = localStorage.getItem(key)
+        if (!stored) continue
+        const data = JSON.parse(stored)
+        if (data.d === d) {
+          Object.entries(data.v).forEach(([prayerId, done]: [string, any]) => {
+            if (stats[prayerId]) {
+              stats[prayerId].total++
+              if (done) stats[prayerId].done++
+            }
+          })
+        }
+      } catch {}
+    }
+    return stats
+  }
+
+  const weeklyPrayers = getPrayerStats(7)
+  const monthlyPrayers = getPrayerStats(30)
+
+  const getPrayerPct = (stats: Record<string, { done: number; total: number }>) => {
+    const total = Object.values(stats).reduce((a, s) => a + s.total, 0)
+    const done = Object.values(stats).reduce((a, s) => a + s.done, 0)
+    return total > 0 ? Math.round((done / total) * 100) : 0
+  }
+
+  const weeklyPct = getPrayerPct(weeklyPrayers)
+  const monthlyPct = getPrayerPct(monthlyPrayers)
   const logs = Object.values(history).sort((a, b) => a.date.localeCompare(b.date))
   const avg = logs.length ? Math.round(logs.reduce((a, l) => a + l.score, 0) / logs.length) : 0
   const { current, best } = streakOf(history)
@@ -247,18 +284,41 @@ function Progress({ history }: { history: History }) {
       <div className="card routine-progress">
         <div className="routine-section">
           <div className="routine-header">🕌 Five Daily Prayers</div>
-          <div className="prayers-list">
-            {Object.entries(prayerLabels).map(([id, name]) => (
-              <div key={id} className="prayer-stat">
-                <span className="prayer-name">{name}</span>
-                <span className={`prayer-status ${todaysPrayers[id] ? 'done' : 'pending'}`}>
-                  {todaysPrayers[id] ? '✓' : '◯'}
-                </span>
-              </div>
-            ))}
+
+          {/* Today's Prayers */}
+          <div className="prayer-period">
+            <div className="period-label">Today</div>
+            <div className="prayers-list">
+              {Object.entries(prayerLabels).map(([id, name]) => (
+                <div key={id} className="prayer-stat">
+                  <span className="prayer-name">{name}</span>
+                  <span className={`prayer-status ${todaysPrayers[id] ? 'done' : 'pending'}`}>
+                    {todaysPrayers[id] ? '✓' : '◯'}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="progress-summary">
+              {Object.values(todaysPrayers).filter(Boolean).length}/{Object.entries(prayerLabels).length} done today
+            </div>
           </div>
-          <div className="progress-summary">
-            {Object.values(todaysPrayers).filter(Boolean).length}/{Object.entries(prayerLabels).length} done today
+
+          {/* Weekly Progress */}
+          <div className="prayer-period">
+            <div className="period-label">This Week (7 days)</div>
+            <div className="progress-bar">
+              <motion.div className="progress-fill" animate={{ width: `${weeklyPct}%` }} />
+            </div>
+            <div className="progress-text">{weeklyPct}% complete</div>
+          </div>
+
+          {/* Monthly Progress */}
+          <div className="prayer-period">
+            <div className="period-label">This Month (30 days)</div>
+            <div className="progress-bar">
+              <motion.div className="progress-fill" animate={{ width: `${monthlyPct}%` }} />
+            </div>
+            <div className="progress-text">{monthlyPct}% complete</div>
           </div>
         </div>
       </div>

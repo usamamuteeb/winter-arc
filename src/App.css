@@ -75,15 +75,23 @@ nav button.act { color: var(--ice); } nav .ic { font-size: 22px; position: relat
 .confetti { position: fixed; top: 38%; left: 50%; z-index: 30; pointer-events: none; } .confetti i { position: absolute; width: 9px; height: 15px; border-radius: 2px; display: block; }
 /* Routine & Prayers Progress */
 .routine-progress { padding: 14px; }
-.routine-section { display: flex; flex-direction: column; gap: 12px; }
+.routine-section { display: flex; flex-direction: column; gap: 16px; }
 .routine-header { font-size: 14px; font-weight: 600; color: var(--ice); margin-bottom: 6px; }
+
+.prayer-period { display: flex; flex-direction: column; gap: 10px; }
+.period-label { font-size: 12px; font-weight: 600; color: #C4B5FD; text-transform: uppercase; letter-spacing: 0.5px; }
+
 .prayers-list { display: flex; flex-direction: column; gap: 8px; }
 .prayer-stat { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(196, 181, 253, 0.08); border-radius: 8px; }
 .prayer-name { font-size: 13px; font-weight: 500; color: var(--txt); }
 .prayer-status { font-size: 16px; font-weight: bold; }
 .prayer-status.done { color: #34D399; }
 .prayer-status.pending { color: var(--mut); }
-.progress-summary { text-align: center; font-size: 12px; color: var(--mut); padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 8px; }
+.progress-summary { text-align: center; font-size: 12px; color: var(--mut); padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+
+.progress-bar { width: 100%; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #C4B5FD, #E9D5FF); border-radius: 5px; }
+.progress-text { text-align: center; font-size: 12px; color: #C4B5FD; font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) { .snow, .wave { display: none; } }
 .split { scrollbar-width: none; } .split::-webkit-scrollbar { display: none; }

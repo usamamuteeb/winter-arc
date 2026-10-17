@@ -12,7 +12,6 @@ export interface Habit { id: string; pillar: Pillar; title: string; time?: strin
 
 // SAMPLE DATA - replaced when you tap "Start fresh" in Progress > Settings
 export const HABITS: Habit[] = [
-  { id: 'r1', pillar: 'routine', title: 'Wake up at 5:45 AM', time: '05:45', xp: 20 },
   { id: 'h1', pillar: 'health', title: 'Warm water + Vitamin D', time: '06:00', xp: 10 },
   { id: 'h5', pillar: 'health', title: 'Weigh in after waking', time: '06:05', xp: 10 },
   { id: 'h2', pillar: 'health', title: '15 min sunlight walk', time: '06:10', xp: 15 },
@@ -26,11 +25,8 @@ export const HABITS: Habit[] = [
   { id: 'd3', pillar: 'diet', title: 'Sugar under my limit today', time: 'All day', xp: 15 },
   { id: 'h3', pillar: 'health', title: '8,000 steps', time: 'All day', xp: 15 },
   { id: 'h4', pillar: 'health', title: 'Stretch 10 min', time: '21:00', xp: 10 },
-  { id: 'r2', pillar: 'routine', title: 'Phone off at 9:30 PM', time: '21:30', xp: 15 },
-  { id: 'r3', pillar: 'routine', title: "Plan tomorrow's 3 priorities", time: '21:40', xp: 10 },
-  { id: 'r4', pillar: 'routine', title: 'Sleep by 10:30 PM', time: '22:30', xp: 20 },
 ]
-export const START_DONE = ['r1', 'h1', 'h5', 'h2', 'g1', 'd1', 'f1', 'd2']
+export const START_DONE = ['h1', 'h5', 'h2', 'g1', 'd1', 'f1', 'd2']
 
 export const ARC_TOTAL = 90
 export const LEVELS = ['Frostbite', 'Iron', 'Steel', 'Titan', 'Winter King']

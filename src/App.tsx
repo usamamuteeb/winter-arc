@@ -4,6 +4,7 @@ import { ARC_TOTAL, HABITS, LEVELS, PILLARS, type Habit, type Pillar } from './d
 import Diet from './Diet'
 import Focus from './Focus'
 import Health from './Health'
+import Routine from './Routine'
 import { LEARN_TOTAL } from './Learn'
 import Trends from './Trends'
 import {
@@ -15,7 +16,7 @@ import './v2.css'
 import './v3.css'
 import './history.css'
 
-type Tab = 'today' | 'health' | 'diet' | 'focus' | 'progress'
+type Tab = 'today' | 'health' | 'diet' | 'focus' | 'routine' | 'progress'
 
 const scoreColor = (s: number) => (s >= 80 ? '#34D399' : s >= 50 ? '#7DD3FC' : '#F87171')
 
@@ -258,7 +259,7 @@ function Progress({ history }: { history: History }) {
 /* ---------- APP ---------- */
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'today', icon: '🏠', label: 'Today' }, { id: 'health', icon: '❤️', label: 'Health' }, { id: 'diet', icon: '🥗', label: 'Diet' },
-  { id: 'focus', icon: '🧠', label: 'Focus' }, { id: 'progress', icon: '📈', label: 'Progress' },
+  { id: 'focus', icon: '🧠', label: 'Focus' }, { id: 'routine', icon: '⏰', label: 'Routine' }, { id: 'progress', icon: '📈', label: 'Progress' },
 ]
 
 export default function App() {
@@ -294,6 +295,7 @@ export default function App() {
           {tab === 'health' && <Health done={done} toggle={toggle} setOn={setOn} habits={habits} setHabits={setHabits} history={history} />}
           {tab === 'diet' && <Diet />}
           {tab === 'focus' && <Focus />}
+          {tab === 'routine' && <Routine />}
           {tab === 'progress' && <Progress history={history} />}
         </motion.main>
       </AnimatePresence>
